@@ -83,7 +83,9 @@ public class Wyper {
         String name = readInput();
 
         List<String> text = textProcessor.getText(name);
-        System.out.println(text);
+
+        TypingActivity ta = new TypingActivity(text);
+        System.out.println(ta.start());
 
     }
 
