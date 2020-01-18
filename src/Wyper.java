@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class TypeReader {
+public class Wyper {
 
     private static final String APP_NAME = "TypeReader";
 
@@ -23,10 +23,10 @@ public class TypeReader {
         commands = new HashMap<>();
 
         // Populate commands map
-        commands.put("add", TypeReader::runCmdAdd);
-        commands.put("type", TypeReader::runCmdType);
-        commands.put("list", TypeReader::runCmdList);
-        commands.put("exit", TypeReader::runCmdExit);
+        commands.put("add", Wyper::runCmdAdd);
+        commands.put("type", Wyper::runCmdType);
+        commands.put("list", Wyper::runCmdList);
+        commands.put("exit", Wyper::runCmdExit);
 
         // TODO: Read saved books into memory
 
@@ -109,7 +109,7 @@ public class TypeReader {
 
     public static void main(String[] args) {
 
-        TypeReader tr = new TypeReader();
+        Wyper tr = new Wyper();
 
         tr.start();
 
