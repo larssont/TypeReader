@@ -1,53 +1,60 @@
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 
 public class FileProcessor {
 
-    private static String appDir;
-    private static String userHomeDir = System.getProperty("user.home");
+    private File appDir;
+    private File textsDir;
+    private File imagesDir;
+    private File settingsDir;
 
-    public FileProcessor(String appName) {
-        FileProcessor.appDir = createDir(appName, userHomeDir);
+    public FileProcessor(String appName, String textsDir, String imagesDir, String settingsDir) {
+
+        String userHome = System.getProperty("user.home");
+
+        this.appDir = new File(formatPath(userHome, appName));
+
+        this.textsDir = newSubFile(appDir, textsDir);
+        this.imagesDir = newSubFile(appDir, imagesDir);
+        this.settingsDir = newSubFile(appDir, settingsDir);
+
+        createDirs();
     }
 
-    public boolean addText(String name, String inputFilePath) {
 
-        if (isFileExisting(formatFilePath(appDir, name))) {
-            return false;
-        }
-
-        String textDirPath = createDir(name, appDir);
-        String outputFile = "text.txt";
-        String outputFilePath = formatFilePath(textDirPath, outputFile);
-        File textFile = new File(outputFilePath);
-
-        try {
-            if (textFile.createNewFile()) {
-                copyFileContents(inputFilePath, outputFilePath);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return true;
+    private void createDirs() {
+        appDir.mkdir();
+        textsDir.mkdir();
+        imagesDir.mkdir();
+        settingsDir.mkdir();
     }
 
-    public String getAbsolutePath(String input) {
-        File f = new File(input);
-        return f.getAbsolutePath();
+
+    public static File newSubFile(File parentDir, String file) {
+        return new File(formatPath(parentDir.getAbsolutePath(), file));
     }
 
-    private String formatFilePath(String dir, String name) {
-        return String.format("%s/%s", dir, name);
-    }
-    public void getText(String textID, File dir) {
-        ArrayList<String> contents = findText(textID, dir);
-        System.out.println(contents);
+    public static String formatPath(String path, String name) {
+        return String.format("%s/%s", path, name);
     }
 
-    private void copyFileContents(String inputFilePath, String outputFilePath) {
+    public static boolean isFileExisting(String path) {
+        File f = new File(path);
+        return f.exists();
+    }
+
+    public static File searchDir(File parentDir, String fileName) {
+        return getFiles(parentDir, fileName)[0];
+    }
+
+    public static File[] getFiles(File parentDir, String fileName) {
+        return parentDir.listFiles((dir, name) -> name.startsWith(fileName));
+    }
+
+    public File getTextDir() {
+        return textsDir;
+    }
+
+    public static boolean copyFileContents(String inputFilePath, String outputFilePath) {
         try {
             FileReader fr = new FileReader(inputFilePath);
             BufferedReader br = new BufferedReader(fr);
@@ -61,46 +68,9 @@ public class FileProcessor {
             br.close();
             fw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return false;
         }
-    }
-
-    public boolean isFileExisting(String filePath) {
-        File f = new File(filePath);
-        return f.exists();
-    }
-
-    private String createDir(String dirName, String path) {
-
-        String dirPath = String.format("%s/%s", path, dirName);
-        File dir = new File(dirPath);
-
-        dir.mkdir();
-        return dir.getAbsolutePath();
-    }
-
-    private ArrayList<String> findText(String textID, File parentDirectory) {
-        // Search for file here in correct directory
-        File[] files = parentDirectory.listFiles();
-        if (files != null) {
-            for(File file : files) {
-                if (file.getName().equalsIgnoreCase(textID)) {
-                    return readText(file.getAbsolutePath());
-                }
-            }
-        }
-        return new ArrayList<>();
-    }
-
-    private ArrayList<String> readText(String filePath) {
-        // Reads all lines of file from filePath
-        try {
-            return new ArrayList<>(Files.readAllLines(Paths.get(filePath)));
-        }
-        catch (IOException e) {
-            return null;
-        }
+        return true;
     }
 
 }
