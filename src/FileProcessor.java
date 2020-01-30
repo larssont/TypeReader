@@ -43,7 +43,8 @@ public class FileProcessor {
     }
 
     public static File searchDir(File parentDir, String fileName) {
-        return getFiles(parentDir, fileName)[0];
+        File[] files = getFiles(parentDir, fileName);
+        return files.length == 0 ? null : files[0];
     }
 
     public static File[] getFiles(File parentDir, String fileName) {

@@ -1,5 +1,4 @@
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 public class TypingActivity {
@@ -16,18 +15,18 @@ public class TypingActivity {
         int correctWords = 0;
 
         for (String line: textLines) {
-
             produceOutput(line);
-            String[] textLineWords = getWords(line);
+            String[] textWords = getWords(line);
             String[] inputWords = parseInputWords();
 
-            for (int i = 0; i < textLineWords.length; i++) {
-                if (inputWords.length < i) break;
-                if (textLineWords[i].equals(inputWords[i])) {
-                    correctWords++;
+            for (int i = 0; i < textWords.length; i++) {
+                if (inputWords.length > i) {
+                    if (textWords[i].equals(inputWords[i])) {
+                        correctWords++;
+                    }
                 }
-                totalWords++;
             }
+            totalWords += textWords.length;
         }
 
         return String.format("Total: %s\nCorrect: %s", totalWords, correctWords);

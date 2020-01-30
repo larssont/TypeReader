@@ -1,50 +1,63 @@
-import com.sun.deploy.util.ArrayUtil;
-
-import java.awt.image.AreaAveragingScaleFilter;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TextProcessor {
 
+    private static List<Text> texts = new ArrayList<>();
+
     private File textRootDir;
-    private final String TEXT_FILE_NAME = "text.txt";
 
     public TextProcessor(File textRootDir) {
         this.textRootDir = textRootDir;
+        loadTexts();
     }
 
     public void addText(String name, String inputFilePath) {
         // Adds text to textRootDir
-
-        File textDir = FileProcessor.newSubFile(textRootDir, name);
-        textDir.mkdir();
-
-        File textFile = FileProcessor.newSubFile(textDir, TEXT_FILE_NAME);
-
         try {
-            if (textFile.createNewFile()) {
-                FileProcessor.copyFileContents(inputFilePath, textFile.getAbsolutePath());
-            }
+            Text text = new Text(textRootDir, name);
+            texts.add(text);
+            writeTextObjToFile(text);
+
+            FileProcessor.copyFileContents(inputFilePath, text.getTextFile().getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String[] listTexts() {
-        // Lists texts inside of textRootDir
-        return textRootDir.list();
+    private void loadTexts() {
+
+        File[] textDirs = textRootDir.listFiles();
+        File[] files;
+
+        String textObjName = Text.getTextObjName();
+
+        if (textDirs != null) {
+            for (File dir : textDirs) {
+                files = dir.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        if (f.getName().equals(textObjName)) {
+                            readTextObjFromFile(f);
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    public ArrayList<String> getText(String textName) {
-        // Search for file here in correct directory
+    public List<String> listTexts() {
+        // Lists texts inside of textRootDir
+        return texts.stream().map(Text::toString).collect(Collectors.toList());
+    }
 
-        File textDir = FileProcessor.searchDir(textRootDir, textName);
-        File textFile = FileProcessor.searchDir(textDir, TEXT_FILE_NAME);
 
-        if (textDir == null) return null;
-
-        return parseText(textFile);
+    public ArrayList<String> findText(String name) {
+        for (Text t: texts) {
+            if (t.toString().equals(name)) return parseText(t.getTextFile());
+        }
+        return null;
     }
 
     private ArrayList<String> parseText(File f) {
@@ -68,6 +81,35 @@ public class TextProcessor {
         }
 
         return output;
+    }
+
+    private void writeTextObjToFile(Text t) {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(t.getObjFile());
+            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+
+            objectOut.writeObject(t);
+            objectOut.close();
+
+            System.out.println("The Object was successfully written to a file.");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void readTextObjFromFile(File f) {
+        try {
+            FileInputStream fileIn = new FileInputStream(f);
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+
+            Text t = (Text) objectIn.readObject();
+            objectIn.close();
+
+            texts.add(t);
+            System.out.println("The Object was successfully read from a file.");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

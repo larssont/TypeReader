@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Wyper {
 
-    private static final String APP_NAME = "TypeReader";
+    private static final String APP_NAME = "Wyper";
 
     private static boolean exit = false;
     private static FileProcessor fileProcessor;
@@ -38,10 +38,10 @@ public class Wyper {
         showWelcome();
 
         while (!exit) {
-            String in = readInput();
+            String in = readCmdInput().toLowerCase();
             // Invoke some command
+            commands.get(in).run();
             try {
-                commands.get(in).run();
             } catch (NullPointerException e) {
                 runCmdInvalid();
             }
@@ -52,21 +52,21 @@ public class Wyper {
         System.out.println("Welcome to TypeReader!");
     }
 
-    private static String readInput() {
+    private static String readCmdInput() {
         Scanner scanner = new Scanner(System.in);
         String in = scanner.nextLine().trim();
         if (in.isEmpty()) {
             System.out.println("Empty input, try again");
-            return readInput();
+            return readCmdInput();
         }
         return in;
     }
 
     private static void runCmdAdd() {
         System.out.println("Enter name of text:");
-        String name = readInput();
+        String name = readCmdInput();
         System.out.println("Enter full path for text file:");
-        String filePath = readInput();
+        String filePath = readCmdInput();
 
         if (!FileProcessor.isFileExisting(filePath)) {
             String msg = "File doesn't exist, make sure this is the correct path:";
@@ -80,24 +80,35 @@ public class Wyper {
 
     private static void runCmdType() {
         System.out.println("Select text to type:");
-        String name = readInput();
+        String name = readCmdInput();
 
-        List<String> text = textProcessor.getText(name);
+        List<String> text = textProcessor.findText(name);
+        if (text == null) {
+            System.out.printf("No text found by the name of: %s\n", name);
+            return;
+        }
 
         TypingActivity ta = new TypingActivity(text);
         System.out.println(ta.start());
 
     }
 
-    private static void runCmdList() {
-        String[] texts = textProcessor.listTexts();
+    private static void runCmdStats() {
+        System.out.println("Select text for stats:");
+        String name = readCmdInput();
 
-        if (texts.length == 0) {
+        //textProcessor.getTexts();
+    }
+
+    private static void runCmdList() {
+        List<String> texts = textProcessor.listTexts();
+
+        if (texts.size() == 0) {
             System.out.println("No texts have been added.");
             return;
         }
 
-        System.out.println(Arrays.toString(texts));
+        System.out.println(texts);
     }
 
     private static void runCmdExit() {
