@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 
 public class Wyper {
@@ -68,13 +70,16 @@ public class Wyper {
         System.out.println("Enter full path for text file:");
         String filePath = readCmdInput();
 
-        if (!FileProcessor.isFileExisting(filePath)) {
-            String msg = "File doesn't exist, make sure this is the correct path:";
-            System.out.println(msg);
+        try {
+            textProcessor.addText(name, filePath);
+        } catch (FileAlreadyExistsException e) {
+            System.out.printf("A text with the name \"%s\" already exists.\n", name);
+            return;
+        } catch (FileNotFoundException e) {
+            System.out.printf("Couldn't find a file located at \"%s\".\n", filePath);
             return;
         }
 
-        textProcessor.addText(name, filePath);
         System.out.println("Text added!");
     }
 

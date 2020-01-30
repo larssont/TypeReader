@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -13,17 +14,40 @@ public class TextProcessor {
         loadTexts();
     }
 
-    public void addText(String name, String inputFilePath) {
+    public boolean addText(String name, String inputFilePath) throws FileAlreadyExistsException, FileNotFoundException {
         // Adds text to textRootDir
+
+        if (!FileProcessor.isFileExisting(inputFilePath)) {
+            throw new FileNotFoundException("");
+        }
+
+        if (containsText(name)) {
+            throw new FileAlreadyExistsException("");
+        }
+        return copyFile(name, inputFilePath);
+    }
+
+    private boolean copyFile(String name, String inputFilePath) {
         try {
             Text text = new Text(textRootDir, name);
             texts.add(text);
             writeTextObjToFile(text);
 
             FileProcessor.copyFileContents(inputFilePath, text.getTextFile().getAbsolutePath());
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    private boolean containsText(String textName) {
+        for (String name : listTexts()) {
+            if (name.equalsIgnoreCase(textName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void loadTexts() {
