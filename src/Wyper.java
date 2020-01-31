@@ -1,4 +1,5 @@
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 
@@ -29,6 +30,7 @@ public class Wyper {
         commands.put("type", Wyper::runCmdType);
         commands.put("list", Wyper::runCmdList);
         commands.put("exit", Wyper::runCmdExit);
+        commands.put("stats", Wyper::runCmdStats);
 
         // TODO: Read saved books into memory
 
@@ -44,6 +46,7 @@ public class Wyper {
             // Invoke some command
             commands.get(in).run();
             try {
+
             } catch (NullPointerException e) {
                 runCmdInvalid();
             }
@@ -78,6 +81,9 @@ public class Wyper {
         } catch (FileNotFoundException e) {
             System.out.printf("Couldn't find a file located at \"%s\".\n", filePath);
             return;
+        } catch (IOException e) {
+            System.out.println("Couldn't create file.");
+            return;
         }
 
         System.out.println("Text added!");
@@ -87,7 +93,7 @@ public class Wyper {
         System.out.println("Select text to type:");
         String name = readCmdInput();
 
-        List<String> text = textProcessor.findText(name);
+        Text text = textProcessor.findText(name);
         if (text == null) {
             System.out.printf("No text found by the name of: %s\n", name);
             return;
@@ -102,7 +108,23 @@ public class Wyper {
         System.out.println("Select text for stats:");
         String name = readCmdInput();
 
-        //textProcessor.getTexts();
+        Text text = textProcessor.findText(name);
+
+        if (text == null) {
+            System.out.printf("No text found with name \"%s\".\n", name);
+            return;
+        }
+
+        String out = String.format("Text: %s\n", name);
+        out += String.format("Total words: %s\n", text.getTotalWords());
+        out += String.format("Completed words: %s\n", text.getCompletedWords());
+        out += String.format("Completion percentage: %s\n", text.getCompletionPercentage());
+        out += String.format("Correct words: %s\n", text.getCorrectWords());
+        out += String.format("Correct words percentage: %s\n", text.getCorrectPercentage());
+        out += String.format("Incorrect words: %s\n", text.getIncorrectWords());
+
+        System.out.println(out);
+
     }
 
     private static void runCmdList() {

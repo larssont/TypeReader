@@ -11,10 +11,10 @@ public class TextProcessor {
 
     public TextProcessor(File textRootDir) {
         this.textRootDir = textRootDir;
-        loadTexts();
+        importTextsObj();
     }
 
-    public boolean addText(String name, String inputFilePath) throws FileAlreadyExistsException, FileNotFoundException {
+    public void addText(String name, String inputFilePath) throws IOException {
         // Adds text to textRootDir
 
         if (!FileProcessor.isFileExisting(inputFilePath)) {
@@ -24,21 +24,17 @@ public class TextProcessor {
         if (containsText(name)) {
             throw new FileAlreadyExistsException("");
         }
-        return copyFile(name, inputFilePath);
-    }
 
-    private boolean copyFile(String name, String inputFilePath) {
-        try {
-            Text text = new Text(textRootDir, name);
-            texts.add(text);
-            writeTextObjToFile(text);
+        Text text = new Text(textRootDir, name);
+        String textPath = text.getTextFile().getAbsolutePath();
 
-            FileProcessor.copyFileContents(inputFilePath, text.getTextFile().getAbsolutePath());
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!FileProcessor.copyFileContents(inputFilePath, textPath)) {
+            throw new IOException();
         }
-        return false;
+
+        writeTextObjToFile(text);
+        text.load();
+        texts.add(text);
     }
 
     private boolean containsText(String textName) {
@@ -50,7 +46,19 @@ public class TextProcessor {
         return false;
     }
 
-    private void loadTexts() {
+    public List<String> listTexts() {
+        // Lists texts inside of textRootDir
+        return texts.stream().map(Text::toString).collect(Collectors.toList());
+    }
+
+    public Text findText(String name) {
+        for (Text t: texts) {
+            if (t.toString().equals(name)) return t;
+        }
+        return null;
+    }
+
+    private void importTextsObj() {
 
         File[] textDirs = textRootDir.listFiles();
         File[] files;
@@ -69,42 +77,6 @@ public class TextProcessor {
                 }
             }
         }
-    }
-
-    public List<String> listTexts() {
-        // Lists texts inside of textRootDir
-        return texts.stream().map(Text::toString).collect(Collectors.toList());
-    }
-
-
-    public ArrayList<String> findText(String name) {
-        for (Text t: texts) {
-            if (t.toString().equals(name)) return parseText(t.getTextFile());
-        }
-        return null;
-    }
-
-    private ArrayList<String> parseText(File f) {
-
-        ArrayList<String> output = new ArrayList<>();
-        BufferedReader br;
-        String line;
-        try {
-            br = new BufferedReader(new FileReader(f));
-            while( (line = br.readLine()) != null){
-                if (line.trim().length() > 0) {
-                    output.add(line);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.err.println("Oops! Please check for the presence of file in the path specified.");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.err.println("Oops! Unable to read the file.");
-            e.printStackTrace();
-        }
-
-        return output;
     }
 
     private void writeTextObjToFile(Text t) {
@@ -129,7 +101,9 @@ public class TextProcessor {
             Text t = (Text) objectIn.readObject();
             objectIn.close();
 
+            // TODO: Fix so text loads updated stats as well (completion etc.)
             texts.add(t);
+            t.load();
             System.out.println("The Object was successfully read from a file.");
         } catch (Exception ex) {
             ex.printStackTrace();

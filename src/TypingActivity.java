@@ -1,22 +1,24 @@
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TypingActivity {
 
-    private List<String> textLines;
+    private Text text;
 
-    public TypingActivity(List<String> textLines) {
-        this.textLines = textLines;
+    public TypingActivity(Text text) {
+        this.text = text;
     }
 
     public String start() {
+
+        ArrayList<String> textLines = text.renderText();
 
         int totalWords = 0;
         int correctWords = 0;
 
         for (String line: textLines) {
             produceOutput(line);
-            String[] textWords = getWords(line);
+            String[] textWords = line.split(" ");
             String[] inputWords = parseInputWords();
 
             for (int i = 0; i < textWords.length; i++) {
@@ -29,6 +31,7 @@ public class TypingActivity {
             totalWords += textWords.length;
         }
 
+        text.addProgress(correctWords, totalWords);
         return String.format("Total: %s\nCorrect: %s", totalWords, correctWords);
     }
 
@@ -40,10 +43,6 @@ public class TypingActivity {
         Scanner scanner = new Scanner(System.in);
         String in = scanner.nextLine();
 
-        return getWords(in);
-    }
-
-    private String[] getWords(String s) {
-        return s.split(" ");
+        return in.split(" ");
     }
 }
