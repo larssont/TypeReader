@@ -25,15 +25,9 @@ public class TextProcessor {
             throw new FileAlreadyExistsException("");
         }
 
-        Text text = new Text(textRootDir, name);
-        String textPath = text.getTextFile().getAbsolutePath();
+        Text text = new Text(textRootDir, name, inputFilePath);
+        FileProcessor.writeObjToFile(text.getObjFile(), text);
 
-        if (!FileProcessor.copyFileContents(inputFilePath, textPath)) {
-            throw new IOException();
-        }
-
-        writeTextObjToFile(text);
-        text.load();
         texts.add(text);
     }
 
@@ -71,42 +65,11 @@ public class TextProcessor {
                 if (files != null) {
                     for (File f : files) {
                         if (f.getName().equals(textObjName)) {
-                            readTextObjFromFile(f);
+                            texts.add((Text) FileProcessor.readObjFromFile(f));
                         }
                     }
                 }
             }
-        }
-    }
-
-    private void writeTextObjToFile(Text t) {
-        try {
-            FileOutputStream fileOut = new FileOutputStream(t.getObjFile());
-            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
-
-            objectOut.writeObject(t);
-            objectOut.close();
-
-            System.out.println("The Object was successfully written to a file.");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void readTextObjFromFile(File f) {
-        try {
-            FileInputStream fileIn = new FileInputStream(f);
-            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
-
-            Text t = (Text) objectIn.readObject();
-            objectIn.close();
-
-            // TODO: Fix so text loads updated stats as well (completion etc.)
-            texts.add(t);
-            t.load();
-            System.out.println("The Object was successfully read from a file.");
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
 

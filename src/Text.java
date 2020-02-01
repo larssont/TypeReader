@@ -1,24 +1,23 @@
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Text implements Serializable {
 
-    private File textDir;
-    private File textFile;
-    private File objFile;
-
-    private ArrayList<String> lines;
-
-    private String name;
     private static final String TEXT_FILE_NAME = "text.txt";
     private static final String TEXT_OBJ_NAME = "obj.txt";
 
-    private int totalWords;
-    private int correctWords;
-    private int completedWords;
+    private final File textDir;
+    private final File textFile;
+    private final File objFile;
+    private final String name;
 
-    public Text(File textRootDir, String name) throws IOException {
+    private int wordTotal = 0;
+    private int wordsCorrect = 0;
+    private int wordsCompleted = 0;
+
+    private int linePosition;
+
+    public Text(File textRootDir, String name, String inputFilePath) throws IOException {
 
         File textDir = FileProcessor.newSubFile(textRootDir, name);
         File textFile = FileProcessor.newSubFile(textDir, TEXT_FILE_NAME);
@@ -31,16 +30,24 @@ public class Text implements Serializable {
         this.textDir = textDir;
         this.textFile = textFile;
         this.objFile = objFile;
+
+        save(inputFilePath);
     }
 
-    public void load() {
-        lines = renderText();
-        totalWords = countWords();
+    private void save(String inputFilePath) {
+        FileProcessor.copyFileContents(inputFilePath, textFile.getAbsolutePath());
+
+        calcProps();
     }
 
-    public void addProgress(int correctWords, int completedWords) {
-        this.correctWords+=correctWords;
-        this.completedWords+=completedWords;
+    public void addProgress(int correctWords, int completedWords, int linePosition) {
+        this.wordsCorrect += correctWords;
+        this.wordsCompleted += completedWords;
+        this.linePosition += linePosition;
+    }
+
+    public int getLinePosition() {
+        return linePosition;
     }
 
     public File getTextDir() {
@@ -59,41 +66,41 @@ public class Text implements Serializable {
         return TEXT_OBJ_NAME;
     }
 
-    public int getTotalWords() {
-        return totalWords;
+    public int getWordTotal() {
+        return wordTotal;
     }
 
-    public int getCompletedWords() {
-        return completedWords;
+    public int getWordsCompleted() {
+        return wordsCompleted;
     }
 
-    public int getCorrectWords() {
-        return correctWords;
+    public int getWordsCorrect() {
+        return wordsCorrect;
     }
 
     public int getIncorrectWords() {
-        return completedWords - correctWords;
+        return wordsCompleted - wordsCorrect;
     }
 
     public float getCompletionPercentage() {
-        return ((float)completedWords/(float)totalWords)*100;
+        float percentage = ((float) wordsCompleted /(float) wordTotal)*100;
+        return Double.isNaN(percentage) ? 0 : percentage;
     }
 
     public float getCorrectPercentage() {
-        return ((float)correctWords/(float)completedWords)*100;
+        float percentage = (float) wordsCorrect /(float) wordsCompleted*100;
+        return Double.isNaN(percentage) ? 0 : percentage;
     }
 
-    public List<String> getLines() {
-        return lines;
-    }
-
-    private int countWords() {
+    private void calcProps() {
+        ArrayList<String> lines = renderText();
         int a = 0;
-        System.out.println(lines.toString());
+
         for (String s : lines) {
             a += s.split(" ").length;
         }
-        return a;
+
+        wordTotal = a;
     }
 
     public ArrayList<String> renderText() {

@@ -55,7 +55,7 @@ public class FileProcessor {
         return textsDir;
     }
 
-    public static boolean copyFileContents(String inputFilePath, String outputFilePath) {
+    public static void copyFileContents(String inputFilePath, String outputFilePath) {
         try {
             FileReader fr = new FileReader(inputFilePath);
             BufferedReader br = new BufferedReader(fr);
@@ -69,9 +69,37 @@ public class FileProcessor {
             br.close();
             fw.close();
         } catch (IOException e) {
-            return false;
+            e.printStackTrace();
         }
-        return true;
+    }
+
+    public static void writeObjToFile(File f, Object obj) {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(f);
+            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+
+            objectOut.writeObject(obj);
+            objectOut.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static Object readObjFromFile(File f) {
+        try {
+            FileInputStream fileIn = new FileInputStream(f);
+            ObjectInputStream objectIn = new ObjectInputStream(fileIn);
+
+            Object obj = objectIn.readObject();
+            objectIn.close();
+
+            return obj;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+
     }
 
 }

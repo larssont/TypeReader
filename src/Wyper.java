@@ -44,9 +44,9 @@ public class Wyper {
         while (!exit) {
             String in = readCmdInput().toLowerCase();
             // Invoke some command
-            commands.get(in).run();
-            try {
 
+            try {
+                commands.get(in).run();
             } catch (NullPointerException e) {
                 runCmdInvalid();
             }
@@ -116,10 +116,10 @@ public class Wyper {
         }
 
         String out = String.format("Text: %s\n", name);
-        out += String.format("Total words: %s\n", text.getTotalWords());
-        out += String.format("Completed words: %s\n", text.getCompletedWords());
+        out += String.format("Total words: %s\n", text.getWordTotal());
+        out += String.format("Completed words: %s\n", text.getWordsCompleted());
         out += String.format("Completion percentage: %s\n", text.getCompletionPercentage());
-        out += String.format("Correct words: %s\n", text.getCorrectWords());
+        out += String.format("Correct words: %s\n", text.getWordsCorrect());
         out += String.format("Correct words percentage: %s\n", text.getCorrectPercentage());
         out += String.format("Incorrect words: %s\n", text.getIncorrectWords());
 
